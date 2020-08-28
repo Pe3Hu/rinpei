@@ -55,13 +55,13 @@ class roughDraft{
     if( this.var.target >= this.var.l )
       return;
 
-    let barrel = 240;
+    let barrel = 100;
     this.var.timer++;
-    if( this.var.timer % 60 == 0 ){
+    if( this.var.timer % 10 == 0 ){
       this.array.bespoke[this.var.target].fillTank( barrel );
       if( this.array.bespoke[this.var.target].var.full )
         this.var.target++;
-      console.log( this.var.timer )
+      //console.log( this.var.timer )
     }
   }
 
@@ -73,6 +73,6 @@ class roughDraft{
     for( let i = 0; i < this.array.bespoke.length; i++ )
       this.array.bespoke[i].draw();
 
-    this.nextTick();
+    //this.nextTick();
   }
 }
