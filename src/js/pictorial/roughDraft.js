@@ -40,7 +40,7 @@ class roughDraft{
   generateBespokes(){
     this.array.bespoke = [];
     for( let index = 0; index < this.var.l; index++ ){
-      let type = 4;
+      let type = 3;
       let offset = this.array.offset[0].copy();
       let n = 3;
       if( this.var.l > 3 )
