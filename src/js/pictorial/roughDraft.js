@@ -5,7 +5,7 @@ class roughDraft{
       a: cellSize
     };
     this.var = {
-      l: 3,
+      l: 1, //3,
       timer: 0,
       target: 0
     };
@@ -55,7 +55,7 @@ class roughDraft{
     if( this.var.target >= this.var.l )
       return;
 
-    let barrel = 100;
+    let barrel = 600;
     this.var.timer++;
     if( this.var.timer % 10 == 0 ){
       this.array.bespoke[this.var.target].fillTank( barrel );
