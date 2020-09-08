@@ -15,7 +15,7 @@ class bespoke{
       type: type,
       tank: 54000,
       fullness: {
-        current: 0,
+        current: 1,
         max: 60
       },
       thickness: 1,
@@ -50,18 +50,9 @@ class bespoke{
     this.initVertexs();
     this.updateCurrentSegment();
     this.var.unit.fullness = Math.floor( this.var.tank / this.var.fullness.max );
+    console.log( this.var.unit.fullness );
+    //this.fillTank( 4000 );
 
-    /*for (var i = 0; i < this.var.segment.total; i++) {
-        let  dots = [];
-        let ii = ( i + 1 ) % this.var.segment.total;
-        dots.push( this.array.vertex[1][ii] );
-        dots.push( this.array.vertex[1][i] );
-        dots.push( this.array.vertex[2][i] );
-        dots.push( this.array.vertex[2][ii] );
-        this.var.segment.current = i;
-        let type = this.setSegmentType( dots )
-        console.log( i, type);
-    }*/
   }
 
   initVertexs(){
@@ -112,8 +103,8 @@ class bespoke{
         break;
       case 2:
         this.array.vertex = [ [], [], [], [] ];
-        this.var.fullness.max = 100;
-        this.var.segment.total = 17;
+        this.var.fullness.max = 10000;
+        this.var.segment.total = 5;
 
         for( let i = 0; i < n; i++ ){
           let vertex = this.const.center.copy();
@@ -186,6 +177,7 @@ class bespoke{
     this.var.fullness.current += refill;
     this.var.square.current += refill * this.var.unit.square;
     this.updateCurrentSegment();
+    console.log( this.var.fullness.current, this.var.fullness.max)
 
     if( this.var.fullness.current >= this.var.fullness.max ){
       this.var.fullness.current = this.var.fullness.max;
@@ -363,29 +355,55 @@ class bespoke{
 
   vertexsFromSquare( points, square ){
     this.var.height.points = [ [], [] ];
-    let h, a, ky = 1, kx = null;
-
-
     let base = Math.abs( points[0].x - points[1].x );
     let height = Math.abs( points[0].y - points[1].y );
     let topSquare = height * base / 2;
+    console.log( square, this.var.square.max  )
 
     switch ( this.var.segment.kind ) {
       case 0:
-        h = Math.sqrt( square * 2 / Math.tan( this.var.innerCorner / 2 ) );
-        a = h * Math.tan( this.var.innerCorner / 2 ) ;
-        this.var.height.stage = 1;
-        this.var.height.points[0].push( points[0] );
-        this.var.height.points[1].push( createVector( points[0].x + kx * a, points[0].y + ky * h ) );
-        this.var.height.points[1].push( createVector( points[0].x , points[0].y + ky * h ) );
+        this.workOnTopTriangle( points, square );
         break;
-      case 1:
-        if( square < topSquare ){
+      case 4:
+        let leftPoints = [];
+        leftPoints.push( this.array.vertex[0][0] );
+        leftPoints.push( points[1] );
+        leftPoints.push( points[2] );
+        leftPoints.push( createVector( this.array.vertex[0][0].x, points[2].y ) );
+        let rightPoints = [];
+        rightPoints.push( points[0] );
+        rightPoints.push( this.array.vertex[0][0] );
+        rightPoints.push( createVector( this.array.vertex[0][0].x, points[3].y ) );
+        rightPoints.push( points[3] );
 
-          console.log(this.var.segment.current, 'top',square,topSquare)
+
+        height = Math.abs( this.array.vertex[0][0].y - points[1].y );
+        topSquare = height * base / 2;
+        if( square < topSquare ){
+          console.log( 1, topSquare );
+          this.workOnTopTriangle( rightPoints, square / 2 );
+          let rightPoint = this.var.height.points[1][0];
+          this.var.height.points = [ [], [] ];
+          this.workOnTopTriangle( leftPoints, square / 2 );
+          this.var.height.points[1][1] = rightPoint;
+        }
+        else{
+          console.log( 2 );
+          this.workOnMiddleRectangle( leftPoints, square / 2 );
+          let leftPoint = this.var.height.points[1][0];
+          this.var.height.points = [ [], [] ];
+          this.workOnMiddleRectangle( rightPoints, square / 2 );
+          this.var.height.points[0] = [ points[0], this.array.vertex[0][0], points[1] ];
+          this.var.height.points[1][1] = leftPoint;
         }
         break;
-    }
+      case 6:
+        if( square < topSquare )
+          this.workOnTopTriangle( points, square );
+        else
+          this.workOnMiddleRectangle( points, square );
+        break;
+      }
 
     /*
     if( square < topSquare ){
@@ -422,6 +440,44 @@ class bespoke{
     */
   }
 
+  workOnTopTriangle( points, square ){
+    let ky = 1, kx = -1;
+    let h = Math.sqrt( square * 2 / Math.tan( this.var.innerCorner / 2 ) );
+    let a = h * Math.tan( this.var.innerCorner / 2 );
+    let topIndex = 0;
+
+    if( points[0].x > this.array.vertex[0][0].x ){
+      topIndex = 1;
+      kx = 1;
+    }
+
+    this.var.height.stage = 1;
+    this.var.height.points[0].push( points[topIndex] );
+    this.var.height.points[1].push( createVector( points[topIndex].x + kx * a, points[topIndex].y + ky * h ) );
+    this.var.height.points[1].push( createVector( points[topIndex].x , points[topIndex].y + ky * h ) );
+  }
+
+  workOnMiddleRectangle( points, square ){
+      let base = Math.abs( points[0].x - points[1].x );
+      let height = Math.abs( points[0].y - points[1].y );
+      let ky = 1, kx = 1;
+      let botIndex = 1;
+
+      if( points[0].x > this.array.vertex[0][0].x ){
+        botIndex = 0;
+        kx = -1;
+      }
+
+      let topSquare = height * base / 2;
+      let midSquare = square - topSquare;
+      let h = midSquare / base;
+
+      this.var.height.points[0].push( points[0] );
+      this.var.height.points[0].push( points[1] );
+      this.var.height.points[1].push( createVector( points[botIndex].x, points[botIndex].y + ky * h ) );
+      this.var.height.points[1].push( createVector( points[botIndex].x + kx * base, points[botIndex].y + ky * h ) );
+  }
+
   rootsThroughDiscriminant( a, b, c ){
     let d = Math.sqrt( b * b - 4 * a * c );
     let x1 = ( -b + d ) / 2 / a;
@@ -439,9 +495,11 @@ class bespoke{
     dots.push( this.array.vertex[2][ii] );
 
     let square = this.var.square.current;
+    this.var.square.max  = this.array.square[this.var.segment.current];
     for( let j = 0; j < i; j++ )
-      square -= this.array.square[i];
+      square -= this.array.square[j];
 
+    //console.log( this.array.square, square )
     this.vertexsFromSquare( dots, square );
   }
 
@@ -460,6 +518,7 @@ class bespoke{
         dots.push( this.array.vertex[2][ii] );
         this.var.segment.current = i;
         this.var.segment.kind = this.setSegmentKind( dots );
+        console.log( this.var.segment.current )
         return;
       }
     }
@@ -491,8 +550,6 @@ class bespoke{
             this.const.center.x, this.const.center.y
           );
         }
-
-
         break;
       case 1:
         for( let i = 0; i < this.array.vertex.length; i+=this.var.segment.total ){
@@ -569,14 +626,21 @@ class bespoke{
           let i = this.var.segment.current;
           let ii = ( this.var.segment.current + 1 ) % this.var.segment.total;
           pointA = this.var.height.points[0][0];
-          pointB = this.var.height.points[1][0];
-          pointC = this.var.height.points[1][1];
-          pointD = this.var.height.points[0][1];
+          pointB = this.var.height.points[0][1];
+          pointC = this.var.height.points[1][0];
+          pointD = this.var.height.points[1][1];
 
-          //triangle( pointA.x, pointA.y, pointB.x, pointB.y, pointC.x, pointC.y );
-          fill('red')
-          //triangle( pointA.x, pointA.y, pointB.x, pointB.y, pointD.x, pointD.y );
-          fill('red')
+          fill('white')
+          triangle( pointA.x, pointA.y,  pointD.x, pointD.y,  pointC.x, pointC.y );
+
+          if( this.var.height.points[0].length == 2 )
+            triangle( pointA.x, pointA.y, pointC.x, pointC.y, pointB.x, pointB.y );
+
+          if( this.var.height.points[0].length == 3 ){
+            let pointE = this.var.height.points[0][2];
+            triangle( pointA.x, pointA.y, pointB.x, pointB.y, pointD.x, pointD.y );
+            triangle( pointB.x, pointB.y, pointD.x, pointD.y, pointE.x, pointE.y );
+          }
         }
         break;
       }

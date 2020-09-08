@@ -40,7 +40,7 @@ class roughDraft{
   generateBespokes(){
     this.array.bespoke = [];
     for( let index = 0; index < this.var.l; index++ ){
-      let type = 3;
+      let type = 1;
       let offset = this.array.offset[0].copy();
       let n = 3;
       if( this.var.l > 3 )
@@ -55,7 +55,7 @@ class roughDraft{
     if( this.var.target >= this.var.l )
       return;
 
-    let barrel = 600;
+    let barrel = 1000;
     this.var.timer++;
     if( this.var.timer % 10 == 0 ){
       this.array.bespoke[this.var.target].fillTank( barrel );
@@ -73,6 +73,6 @@ class roughDraft{
     for( let i = 0; i < this.array.bespoke.length; i++ )
       this.array.bespoke[i].draw();
 
-    //this.nextTick();
+    this.nextTick();
   }
 }
