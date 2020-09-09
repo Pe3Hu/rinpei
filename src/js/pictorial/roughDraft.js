@@ -55,7 +55,7 @@ class roughDraft{
     if( this.var.target >= this.var.l )
       return;
 
-    let barrel = 1000;
+    let barrel = 1600;
     this.var.timer++;
     if( this.var.timer % 10 == 0 ){
       this.array.bespoke[this.var.target].fillTank( barrel );
